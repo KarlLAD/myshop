@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 
@@ -18,18 +18,9 @@ use App\Http\Controllers\ProfileController;
 
 Route::get('/', [ProductController::class, 'index'])->name('accueil');
 
-Route::get('/filtre/{id}', [ProductController::class, 'index'])->name('accueil');
+Route::get('/filtre/{id}', [ProductController::class, 'index'])->name('accueil.category');
 
 Route::get('/detail/{product}', [ProductController::class, 'detail'])->name('accueil.detail');
-
-Route::get('/addtocart/{product}', [ProductController::class, 'addToCart'])->name('addtocart');
-
-
-
-Route::get('/', function () {
-    return view('welcome');
-});
-
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -40,20 +31,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    //ajouter le produit si utilisateur
-    Route::get('/addtocart/{product}', [ProfileController::class, 'addtocart'])->name('addtocart');
-
-    // lister le panier
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
 
-    // ajouter au panier si
     Route::get('/addtocart/{product}', [CartController::class, 'add'])->name('addtocart');
-
-
-    // Route::get('/cart', [CartController::class, 'index'])->name('cart');
-
-    // Route::get('/addtocart/{product}', [CartController::class, 'add'])->name('addtocart');
-
 });
 
 require __DIR__ . '/auth.php';
