@@ -16,7 +16,7 @@ class ProductController extends Controller
     {
         // Si id != 0 on liste par catégories sinon on liste tout.
         if ($id != 0) {
-            // Afficher les Product de la catégorie par date de création
+            // Afficher les Products de la catégorie par date de création
             $products = Product::where('category_id', $id)->orderBy('updated_at', 'desc')->paginate(10);
         } else {
             $products = Product::orderBy('updated_at', 'desc')->paginate(10);
@@ -24,18 +24,26 @@ class ProductController extends Controller
         $categories = Category::orderBy('name', 'ASC')->get();
 
         // dd($categories);
+        //panier
 
-        return view('accueil', compact('products', 'categories'));
+        $cart = Cart::all();
+
+        return view('accueil', compact('products', 'categories', 'cart'));
     }
 
-    public function detail(Product $product)
+    public function detail(Product $product, Cart $cart)
     {
         // Afficher le détail du produits mais aussi les produits similaires
 
         $products = Product::where('category_id', $product->category_id)->inRandomOrder()->limit(4)->get();
         // dd($products);
 
-        return view('detail', compact('product'));
+        $cart->user_id = $product->user_id;
+        $cart->product_id = $product->product_id;
+        $cart->quantity = 1;
+        $cart->price = $product->price;
+        // dd('$cart');
+        return view('detail', compact('product', 'products', 'cart'));
     }
 
     /**
@@ -44,7 +52,7 @@ class ProductController extends Controller
      * Si il existe. Mettre à jour la quantité
      */
 
-    public function addToCart(Product $product)
+    public function addToCart(Product $product, Cart $cart)
     {
         // On vérifie l'existance du produit du panier
 
@@ -54,53 +62,53 @@ class ProductController extends Controller
             ->where('product_id', $product->id)
             ->first();
 
+
         if (isset($cart)) {
             // Le produit existe déjà dans le panier
-            Cart::where('id', $cart->id)->update([
+            $cart = Cart::where('id', $cart->id)->update([
                 'quantity' => $cart->quantity + 1
-            ]);
+            ])->get();
         } else {
             // Le produit n'existe pas encore dans le panier, alors créez une nouvelle entrée
-            Cart::create([
+            $cart =Cart::create([
                 "user_id" => Auth::user()->id,
                 "product_id" => $product->id,
                 "quantity" => 1,
                 "price" => $product->prix,
-            ]);
+            ])->get();
         }
 
-        // public function addToCart(Product $product)
-        // {
-        //     // On vérifie l'existance du produit du panier
 
-        //     // SELEC * FROM Cart WHERE user_id="" AND product_id="$product->id" LIMIT(1)
+        return view('addtocart', compact('cart', 'product'));
 
-        //     $cart = Cart::where('user_id', Auth::user()->id)
-        //         ->where('product_id', $product->id)
-        //         // ->limit(1) on met ->firts() à la place de limit et get
-        //         // ->get();
-        //         ->first();
+}
 
-        //     //controller l'existance du produit
-        //     // dd($cart);
+// Effecter l' item du panier
 
-        //     // vérification
-        //     if (isset($cart)) {
-        //         // le produit existe déjà dans le panier
-        //         //SELECT * FROM CART WHERE user_id =10 AND product_id = 5
-        //         Cart::where('id', $cart->id)
-        //             //UPDATE CART SET QUANTITY=4 WHERE ID=2
-        //             ->update(['quantity' => $cart->quantity + 1]);
-        //     } else {
+public function deleteToCart(Product $product)
+    {
+        // on vérifie l'existance du produit
+        $cart = Cart::where('user_id', Auth::user()->id)
+            ->where('product_id', $product->id)
+            ->first();
 
-        //         // Le produit existe déjà dans le panier
-        //         Cart::Create([
-        //             "user_id" => Auth::user()->id,
-        //             "product_id" => $product->id,
-        //             "quantity" => 1,
-        //             "price" => $product->price,
-        //         ]);
-        //     }
-
+        if (isset($cart)) {
+            // Le produit existe déjà dans le panier , on enlève un produit
+            Cart::where('id', $cart->id)->delete([
+                'quantity' => $cart->quantity - 1
+            ]);
+        } else {
+            // on efface le produit dans le panier
+            Cart::where('id', $cart->id)->delete([
+                "user_id" => Auth::user()->id,
+                "product_id" => $product->id,
+                "quantity" => 0,
+                "price" => 0,
+            ]);
+        }
+        return redirect()->back();
     }
+
+
+
 }

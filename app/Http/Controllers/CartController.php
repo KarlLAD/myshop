@@ -15,9 +15,10 @@ class CartController extends Controller
     {
         //
         $user = Auth::user()->id;
-        $cart = Cart::where('user_id', $user);
-        dd($cart);
-        return view('accueil', compact('cart'));
+        $cart = Cart::where('user_id', $user)->get();
+        $somme = 0;
+
+        return view('cart', compact('user', 'cart', 'somme'));
     }
 
     // ajouter au panier
@@ -46,6 +47,9 @@ class CartController extends Controller
                 "price" => $product->prix,
             ]);
         }
+
+        dd($cart);
+        return redirect()->back();
     }
 
     // effacer un produit
@@ -71,7 +75,31 @@ class CartController extends Controller
                 "price" => 0,
             ]);
         }
+        return redirect()->back();
     }
+
+    //valider le panier
+    // public function validate(Product $product)
+    // {
+
+    //             // on vérifie l'existance du produit
+    //             $cart = Cart::where('user_id', Auth::user()->id)
+    //             ->where('product_id', $product->id)
+    //             ->first();
+
+    //             if (isset($cart)) {
+    //                 // Le produit existe déjà dans le panier
+    //                 Cart::all()->get();
+    //             } else {
+
+
+    //             }
+
+    //     $product = Cart::where('user_id', Auth::user()->id);
+
+
+    //     return redirect()->back();
+    // }
 }
 // <?php
 

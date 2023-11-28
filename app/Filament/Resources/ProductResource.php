@@ -15,9 +15,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
+    // gestion products, boutons
     protected static ?string $model = Product::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    //heroicon-o-collection
+    protected static ?string $navigationIcon = 'simpleline-bag';
 
     public static function form(Form $form): Form
     {
@@ -34,8 +35,9 @@ class ProductResource extends Resource
                     ->maxLength(150),
                 Forms\Components\Textarea::make('description')
                     ->maxLength(65535),
-                Forms\Components\TextInput::make('image')
-                    ->maxLength(191),
+                // upload un fichier image
+                Forms\Components\FileUpload::make('image')
+                    ->image(),
                 Forms\Components\TextInput::make('prix'),
             ]);
     }
@@ -44,11 +46,15 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('image')
+                ->height(200)
+                ->width(200),
                 Tables\Columns\TextColumn::make('category.name'),
                 Tables\Columns\TextColumn::make('user.name'),
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('description'),
-                Tables\Columns\TextColumn::make('image'),
+
+
                 Tables\Columns\TextColumn::make('prix'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime(),
@@ -65,14 +71,14 @@ class ProductResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -80,5 +86,5 @@ class ProductResource extends Resource
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
-    }    
+    }
 }
